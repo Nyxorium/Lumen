@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Lumen",
+  "name": "Pronouns for Bluesky",
   "version": "0.1.0",
-  "description": "Surfaces pronouns from AT Protocol profiles on Bluesky.",
+  "description": "Display pronouns on Bluesky profiles.",
 
   "icons": {
     "48": "icons/PIA09178.png",
@@ -11,7 +11,7 @@
 
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Lumen"
+    "default_title": "Pronouns for Bluesky"
   },
 
   "content_scripts": [
