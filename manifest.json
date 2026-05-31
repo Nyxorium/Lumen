@@ -5,8 +5,7 @@
   "description": "Display pronouns on Bluesky profiles.",
 
   "icons": {
-    "48": "icons/PIA09178.png",
-    "96": "icons/PIA09178.png"
+    "1080": "icons/PIA09178.png"
   },
 
   "action": {
@@ -29,7 +28,10 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "lumen@nyxorium",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["authenticationInfo"]
+      }
     }
   }
 }
