@@ -22,3 +22,7 @@ Pronouns appear next to the handle, exactly as they do in [Nyxo Sky](https://nyx
 ## How it works
 
 When you visit a profile on bsky.app, Lumen fetches the profile record from the public AT Protocol API and injects the `pronouns` field next to the handle. If no pronouns are set, nothing changes.
+
+## Icon
+
+[PIA09178](https://images.nasa.gov/details/PIA09178) by NASA/JPL-Caltech/Univ. of Ariz. — public domain.
