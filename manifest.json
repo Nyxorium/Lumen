@@ -5,7 +5,8 @@
   "description": "Surfaces pronouns from AT Protocol profiles on Bluesky.",
 
   "icons": {
-    "48": "icons/icon48.png"
+    "48": "icons/PIA09178.png",
+    "96": "icons/PIA09178.png"
   },
 
   "action": {
