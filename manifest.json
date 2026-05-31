@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Lumen",
+  "version": "0.1.0",
+  "description": "Surfaces pronouns from AT Protocol profiles on Bluesky.",
+
+  "icons": {
+    "48": "icons/icon48.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://bsky.app/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lumen@nyxorium",
+      "strict_min_version": "109.0"
+    }
+  }
+}
