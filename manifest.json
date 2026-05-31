@@ -8,6 +8,11 @@
     "48": "icons/icon48.png"
   },
 
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Lumen"
+  },
+
   "content_scripts": [
     {
       "matches": ["https://bsky.app/*"],
@@ -16,7 +21,9 @@
     }
   ],
 
-  "permissions": [],
+  "permissions": ["storage"],
+
+  "host_permissions": ["<all_urls>"],
 
   "browser_specific_settings": {
     "gecko": {

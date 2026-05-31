@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumen</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      background: #0e1116;
+      color: #e6edf3;
+      padding: 16px;
+      min-height: 200px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #e6edf3;
+    }
+
+    header .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3b82f6;
+      flex-shrink: 0;
+    }
+
+    /* ── login view ── */
+    #view-login { display: flex; flex-direction: column; gap: 12px; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #7d8590;
+    }
+
+    .field input {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 13px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    .field input:focus { border-color: #3b82f6; }
+    .field input::placeholder { color: #484f58; }
+
+    .hint {
+      font-size: 11px;
+      color: #7d8590;
+      line-height: 1.5;
+    }
+
+    .hint a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .hint a:hover { text-decoration: underline; }
+
+    /* ── main view ── */
+    #view-main { display: none; flex-direction: column; gap: 16px; }
+
+    .account-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .account-handle {
+      font-size: 13px;
+      color: #7d8590;
+    }
+
+    .btn-signout {
+      font-size: 11px;
+      color: #7d8590;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .btn-signout:hover { color: #e6edf3; }
+
+    .pronouns-section { display: flex; flex-direction: column; gap: 6px; }
+
+    .pronouns-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #7d8590;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-wrap input {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e6edf3;
+      font-size: 13px;
+      padding: 7px 42px 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    .input-wrap input:focus { border-color: #3b82f6; }
+    .input-wrap input::placeholder { color: #484f58; }
+
+    .char-count {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: #484f58;
+      pointer-events: none;
+      transition: color 0.15s;
+    }
+
+    .char-count.warn { color: #f59e0b; }
+    .char-count.over { color: #ef4444; }
+
+    /* ── shared button ── */
+    .btn-primary {
+      background: #3b82f6;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+      width: 100%;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .btn-primary:hover { background: #2563eb; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── status message ── */
+    .status {
+      font-size: 12px;
+      text-align: center;
+      min-height: 16px;
+      color: #7d8590;
+    }
+
+    .status.error { color: #ef4444; }
+    .status.success { color: #22c55e; }
+
+    /* ── divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid #21262d;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="dot" aria-hidden="true"></span>
+    <h1>Lumen</h1>
+  </header>
+
+  <!-- Login view -->
+  <div id="view-login">
+    <div class="field">
+      <label for="input-handle">Handle</label>
+      <input id="input-handle" type="text" placeholder="you.bsky.social" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="field">
+      <label for="input-password">App password</label>
+      <input id="input-password" type="password" placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="off" />
+    </div>
+    <p class="hint">
+      Use an <a href="https://bsky.app/settings/app-passwords" target="_blank" rel="noopener">app password</a>, not your main password.
+    </p>
+    <button class="btn-primary" id="btn-login">Sign in</button>
+    <p class="status" id="login-status"></p>
+  </div>
+
+  <!-- Main view -->
+  <div id="view-main">
+    <div class="account-row">
+      <span class="account-handle" id="display-handle"></span>
+      <button class="btn-signout" id="btn-signout">Sign out</button>
+    </div>
+    <hr />
+    <div class="pronouns-section">
+      <span class="pronouns-label">Your pronouns</span>
+      <div class="input-wrap">
+        <input id="input-pronouns" type="text" maxlength="40" placeholder="e.g. they/them" autocomplete="off" spellcheck="false" />
+        <span class="char-count" id="char-count">0/20</span>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-save">Save</button>
+    <p class="status" id="save-status"></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
