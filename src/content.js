@@ -1,6 +1,7 @@
 /**
  * Lumen - content.js
- * Surfaces the AT Protocol `pronouns` field on bsky.app profile pages.
+ * Surfaces the AT Protocol `pronouns` field on bsky.app profile pages
+ * and post thread views.
  */
 
 const INJECTED_ATTR = "data-lumen-pronouns";
@@ -17,6 +18,14 @@ function getActorFromURL() {
 }
 
 /**
+ * Returns true if the current URL is a post thread view.
+ *   /profile/<handle>/post/<rkey>
+ */
+function isThreadURL() {
+  return /^\/profile\/[^/]+\/post\/[^/]+/.test(window.location.pathname);
+}
+
+/**
  * Fetch the profile record from the public AT Protocol API.
  * No auth needed - getProfile is public.
  */
@@ -30,6 +39,19 @@ async function fetchPronouns(actor) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Cache to avoid redundant API calls for the same actor within a session.
+ * null is also cached to avoid re-fetching profiles with no pronouns set.
+ */
+const pronounsCache = new Map();
+
+async function fetchPronounsCached(actor) {
+  if (pronounsCache.has(actor)) return pronounsCache.get(actor);
+  const pronouns = await fetchPronouns(actor);
+  pronounsCache.set(actor, pronouns);
+  return pronouns;
 }
 
 /**
@@ -61,6 +83,22 @@ function findHandleElement() {
 }
 
 /**
+ * Find the handle element within a postThreadItem.
+ * Strips Unicode bidi control characters before checking for "@" prefix,
+ * since bsky.app wraps handle text in U+202A/U+202C markers.
+ */
+function findHandleInPost(postEl) {
+  const divs = postEl.querySelectorAll('div[dir="auto"]');
+  for (const div of divs) {
+    const text = div.textContent.trim().replace(/[\u202a\u202c\u200f\u200e]/g, "");
+    if (text.startsWith("@") && !text.includes(" ")) {
+      return div;
+    }
+  }
+  return null;
+}
+
+/**
  * Inject the pronouns inside the handle element, matching Nyxo Sky's style:
  *   @handle · They/Them
  * The span is appended inside the handle element so it fully inherits
@@ -79,35 +117,81 @@ function injectPronouns(handleEl, pronouns) {
 }
 
 /**
- * Remove any existing injected badge (for navigation cleanup).
+ * Scan for all postThreadItem elements and inject pronouns into each.
+ * Skips any already injected. Safe to call multiple times as new posts load.
  */
-function cleanup() {
-  document
-    .querySelectorAll(`[${INJECTED_ATTR}]`)
-    .forEach((el) => el.remove());
+async function injectThreadPronouns() {
+  const posts = document.querySelectorAll(
+    '[data-testid^="postThreadItem-by-"]'
+  );
+  for (const post of posts) {
+    if (post.querySelector(`[${INJECTED_ATTR}]`)) continue;
+    const handle = post
+      .getAttribute("data-testid")
+      .replace("postThreadItem-by-", "");
+    const pronouns = await fetchPronounsCached(handle);
+    if (!pronouns) continue;
+    const handleEl = findHandleInPost(post);
+    if (handleEl) injectPronouns(handleEl, pronouns);
+  }
 }
 
 /**
- * Main run function - checks current URL, fetches + injects pronouns.
+ * Try to inject profile header pronouns if the element is present.
+ * Returns true if the handle element was found (regardless of whether
+ * pronouns were set), so we know to stop trying.
+ */
+async function tryInjectProfile(actor) {
+  const handleEl = findHandleElement();
+  if (!handleEl) return false;
+  const pronouns = await fetchPronounsCached(actor);
+  if (pronouns) injectPronouns(handleEl, pronouns);
+  return true;
+}
+
+/**
+ * Remove any existing injected badges, disconnect the DOM observer,
+ * and clear the observer reference.
+ */
+function cleanup() {
+  document.querySelectorAll(`[${INJECTED_ATTR}]`).forEach((el) => el.remove());
+  if (threadObserver) {
+    threadObserver.disconnect();
+    threadObserver = null;
+  }
+}
+
+let threadObserver = null;
+
+/**
+ * Main run function - sets up a MutationObserver on <main> that reacts
+ * to DOM changes, attempting injection whenever relevant nodes appear.
  */
 async function run() {
   const actor = getActorFromURL();
   if (!actor) return;
 
-  const pronouns = await fetchPronouns(actor);
-  if (!pronouns) return;
+  // Disconnect any observer left over from a previous navigation
+  if (threadObserver) {
+    threadObserver.disconnect();
+    threadObserver = null;
+  }
 
-  // The profile DOM may not be ready yet, so poll briefly
-  let attempts = 0;
-  const interval = setInterval(() => {
-    attempts++;
-    const handleEl = findHandleElement();
-    if (handleEl) {
-      clearInterval(interval);
-      injectPronouns(handleEl, pronouns);
-    }
-    if (attempts > 20) clearInterval(interval); // give up after ~2s
-  }, 100);
+  let profileInjected = false;
+
+  threadObserver = new MutationObserver(async () => {
+    if (isThreadURL()) await injectThreadPronouns();
+    if (!profileInjected) profileInjected = await tryInjectProfile(actor);
+  });
+
+  threadObserver.observe(document.querySelector("main") ?? document.body, {
+    childList: true,
+    subtree: true,
+  });
+
+  // Also attempt immediately in case the DOM is already ready
+  if (isThreadURL()) await injectThreadPronouns();
+  if (!profileInjected) profileInjected = await tryInjectProfile(actor);
 }
 
 /**
