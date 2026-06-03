@@ -5,7 +5,8 @@
   "description": "Display pronouns on Bluesky profiles.",
 
   "icons": {
-    "1080": "icons/PIA09178.png"
+    "1080": "icons/PIA09178.png",
+    "128": "icons/PIA09178_x128.png"
   },
 
   "action": {
